@@ -162,7 +162,7 @@ const ImageEditor = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4">
       <div className="max-w-7xl mx-auto">
         <header className="text-center py-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-bold text-purple-700 mb-2">
             画像編集ツール
           </h1>
         </header>
@@ -170,7 +170,7 @@ const ImageEditor = () => {
         <div className="grid lg:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <Upload className="w-5 h-5 text-purple-600" />
                 画像をアップロード
               </h2>
@@ -228,7 +228,7 @@ const ImageEditor = () => {
             </div>
 
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-purple-600" />
                 編集指示
               </h2>
@@ -237,7 +237,7 @@ const ImageEditor = () => {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="どのように画像を編集しますか？"
-                className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-gray-800 placeholder-gray-500"
                 rows={4}
               />
 
@@ -289,7 +289,7 @@ const ImageEditor = () => {
 
           <div className="space-y-4">
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-semibold mb-4">生成結果</h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">生成結果</h2>
               
               {variations.length > 0 ? (
                 <div className="grid gap-4">
