@@ -126,10 +126,37 @@ const ImageEditor = () => {
     }
 
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setSelectedImage(reader.result as string);
-      setError(null);
-      setVariations([]);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // 最大サイズを2048pxに制限
+        const MAX_SIZE = 2048;
+        if (width > MAX_SIZE || height > MAX_SIZE) {
+          if (width > height) {
+            height = Math.round((height * MAX_SIZE) / width);
+            width = MAX_SIZE;
+          } else {
+            width = Math.round((width * MAX_SIZE) / height);
+            height = MAX_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        // JPEG形式で圧縮（品質0.85）
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        setSelectedImage(compressedDataUrl);
+        setError(null);
+        setVariations([]);
+      };
+      img.src = e.target?.result as string;
     };
     reader.readAsDataURL(file);
   };
@@ -220,8 +247,17 @@ const ImageEditor = () => {
         body: JSON.stringify(requestBody)
       });
 
-      const data = await response.json();
-      console.log('Frontend Response:', data);
+      let data;
+      const responseText = await response.text();
+
+      try {
+        data = JSON.parse(responseText);
+        console.log('Frontend Response:', data);
+      } catch (e) {
+        console.error('JSON Parse Error:', e);
+        console.error('Raw Response:', responseText);
+        throw new Error(`サーバーエラー: ${response.status} ${response.statusText} - ${responseText.substring(0, 100)}...`);
+      }
 
       if (!response.ok) {
         if (response.status === 429) {
@@ -290,8 +326,8 @@ const ImageEditor = () => {
               <button
                 onClick={() => handleModeChange('edit')}
                 className={`px-6 py-2 rounded-md font-medium transition-all ${mode === 'edit'
-                    ? 'bg-purple-600 text-white shadow-md'
-                    : 'text-gray-600 hover:text-purple-600'
+                  ? 'bg-purple-600 text-white shadow-md'
+                  : 'text-gray-600 hover:text-purple-600'
                   }`}
               >
                 画像編集
@@ -299,8 +335,8 @@ const ImageEditor = () => {
               <button
                 onClick={() => handleModeChange('generate')}
                 className={`px-6 py-2 rounded-md font-medium transition-all ${mode === 'generate'
-                    ? 'bg-purple-600 text-white shadow-md'
-                    : 'text-gray-600 hover:text-purple-600'
+                  ? 'bg-purple-600 text-white shadow-md'
+                  : 'text-gray-600 hover:text-purple-600'
                   }`}
               >
                 文字から画像生成
@@ -308,8 +344,8 @@ const ImageEditor = () => {
               <button
                 onClick={() => handleModeChange('combined')}
                 className={`px-6 py-2 rounded-md font-medium transition-all ${mode === 'combined'
-                    ? 'bg-purple-600 text-white shadow-md'
-                    : 'text-gray-600 hover:text-purple-600'
+                  ? 'bg-purple-600 text-white shadow-md'
+                  : 'text-gray-600 hover:text-purple-600'
                   }`}
               >
                 統合モード
@@ -453,11 +489,11 @@ const ImageEditor = () => {
                   (mode === 'generate' && !textPrompt.trim())
                 }
                 className={`w-full mt-4 py-3 px-4 rounded-lg font-semibold transition-all transform hover:scale-105 ${isLoading ||
-                    (mode === 'edit' && (!selectedImage || !prompt)) ||
-                    (mode === 'combined' && !selectedImage) ||
-                    (mode === 'generate' && !textPrompt.trim())
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
+                  (mode === 'edit' && (!selectedImage || !prompt)) ||
+                  (mode === 'combined' && !selectedImage) ||
+                  (mode === 'generate' && !textPrompt.trim())
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
                   }`}
               >
                 {isLoading ? (
