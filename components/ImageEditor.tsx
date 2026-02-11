@@ -66,7 +66,7 @@ const ImageEditor = () => {
 
   const processApiResponse = (data: any, mode: string): Variation[] => {
     const processedVariations: Variation[] = [];
-    
+
     if (data.response?.choices?.[0]?.message?.images) {
       data.response.choices[0].message.images.forEach((img: any, index: number) => {
         if (img.image_url?.url) {
@@ -107,7 +107,7 @@ const ImageEditor = () => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFile(e.dataTransfer.files[0]);
     }
@@ -156,48 +156,48 @@ const ImageEditor = () => {
       if (mode === 'combined') {
         // 統合モード: 文字削除商品画像を3枚生成
         const base64Image = selectedImage!.split(',')[1];
-        
+
         // 統合モード専用の選択的文字削除プロンプト
         const baseTextRemovalPrompt = 'この商品画像からオーバーレイされたテキスト（画像上に重ねて表示された文字）のみを削除してください。商品のラベル、パッケージ、ボトルに印刷されているブランド名、商品名、ロゴ、成分表示、使用方法、容量表示、製造元情報など、商品に直接印刷・記載されている全ての文字は保持してください。商品の形状、色、質感、ラベルデザインは一切変更せず、オーバーレイテキストが表示されていた部分のみを自然に補完してください。各画像は独立した1つのシーンのみを含み、複数のシーンを1つの画像にまとめないでください。';
-        
+
         // ユーザーが追加指示を入力した場合は背景変更を追加
         const userPrompt = prompt.trim();
-        const finalPrompt = userPrompt 
+        const finalPrompt = userPrompt
           ? `${baseTextRemovalPrompt} 背景は「${userPrompt}」に変更してください。`
           : `${baseTextRemovalPrompt} 背景は商品に合った自然な背景に変更してください。`;
-        
+
         const textRemovalRequest = {
           mode: 'edit',
           image: base64Image,
           prompt: finalPrompt,
           imageCount: 3
         };
-        
+
         const response = await fetch('/api/edit-image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(textRemovalRequest)
         });
-        
+
         const data = await response.json();
-        
+
         if (!response.ok) {
           throw new Error(data.error || '文字削除エラー');
         }
-        
+
         // 結果を処理
         const variations = processApiResponse(data, 'combined');
-        
+
         // タイプを設定
         variations.forEach((v, i) => {
           v.index = i + 1;
           v.type = 'combined';
         });
-        
+
         setVariations(variations);
         return;
       }
-      
+
       // 通常モードの処理
       const requestBody: any = {
         mode: mode,
@@ -211,7 +211,7 @@ const ImageEditor = () => {
       } else {
         requestBody.textPrompt = textPrompt;
       }
-      
+
       const response = await fetch('/api/edit-image', {
         method: 'POST',
         headers: {
@@ -241,7 +241,7 @@ const ImageEditor = () => {
       }
 
       setVariations(processedVariations);
-      
+
     } catch (err) {
       console.error('Generation Error:', err);
       setError(err instanceof Error ? err.message : '予期しないエラー');
@@ -252,10 +252,10 @@ const ImageEditor = () => {
 
   const downloadImage = (variation: Variation) => {
     console.log('Downloading variation:', variation.index, 'Data length:', variation.data.length);
-    
+
     const link = document.createElement('a');
     link.href = `data:${variation.mimeType};base64,${variation.data}`;
-    
+
     // ファイル名を種類に応じて変更
     let filename = '';
     if (variation.type === 'combined') {
@@ -267,12 +267,12 @@ const ImageEditor = () => {
     } else {
       filename = `generated-image-${variation.index}.png`;
     }
-    
+
     link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     console.log('Download completed');
   };
 
@@ -283,43 +283,40 @@ const ImageEditor = () => {
           <h1 className="text-4xl font-bold text-purple-700 mb-4">
             AI画像ツール
           </h1>
-          
+
           {/* モード切り替えボタン */}
           <div className="flex justify-center mb-6">
             <div className="bg-white rounded-lg shadow-md p-1">
               <button
                 onClick={() => handleModeChange('edit')}
-                className={`px-6 py-2 rounded-md font-medium transition-all ${
-                  mode === 'edit'
+                className={`px-6 py-2 rounded-md font-medium transition-all ${mode === 'edit'
                     ? 'bg-purple-600 text-white shadow-md'
                     : 'text-gray-600 hover:text-purple-600'
-                }`}
+                  }`}
               >
                 画像編集
               </button>
               <button
                 onClick={() => handleModeChange('generate')}
-                className={`px-6 py-2 rounded-md font-medium transition-all ${
-                  mode === 'generate'
+                className={`px-6 py-2 rounded-md font-medium transition-all ${mode === 'generate'
                     ? 'bg-purple-600 text-white shadow-md'
                     : 'text-gray-600 hover:text-purple-600'
-                }`}
+                  }`}
               >
                 文字から画像生成
               </button>
               <button
                 onClick={() => handleModeChange('combined')}
-                className={`px-6 py-2 rounded-md font-medium transition-all ${
-                  mode === 'combined'
+                className={`px-6 py-2 rounded-md font-medium transition-all ${mode === 'combined'
                     ? 'bg-purple-600 text-white shadow-md'
                     : 'text-gray-600 hover:text-purple-600'
-                }`}
+                  }`}
               >
                 統合モード
               </button>
             </div>
           </div>
-          
+
           {/* 統合モードの説明 */}
           {mode === 'combined' && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 max-w-2xl mx-auto">
@@ -337,58 +334,57 @@ const ImageEditor = () => {
                   <Upload className="w-5 h-5 text-purple-600" />
                   画像をアップロード
                 </h2>
-              
-              <div
-                className={`border-2 border-dashed rounded-lg p-8 transition-colors ${
-                  dragActive ? 'border-purple-500 bg-purple-50' : 'border-gray-300'
-                } hover:border-purple-400 hover:bg-gray-50`}
-                style={{ minHeight: '400px' }}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileInput}
-                  className="hidden"
-                />
-                
-                {selectedImage ? (
-                  <div className="relative h-full flex items-center justify-center">
-                    <img 
-                      src={selectedImage} 
-                      alt="Selected" 
-                      className="max-w-full max-h-full rounded-lg object-contain bg-white"
-                      style={{ backgroundColor: 'white' }}
-                      onError={(e) => {
-                        console.error('Image display error:', e);
-                        setError('画像の表示に失敗しました');
-                      }}
-                      onLoad={() => console.log('Image loaded successfully')}
-                    />
-                    <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors rounded-lg cursor-pointer flex items-center justify-center">
-                      <p className="text-white opacity-0 hover:opacity-100 transition-opacity">
-                        クリックして変更
+
+                <div
+                  className={`border-2 border-dashed rounded-lg p-8 transition-colors ${dragActive ? 'border-purple-500 bg-purple-50' : 'border-gray-300'
+                    } hover:border-purple-400 hover:bg-gray-50`}
+                  style={{ minHeight: '400px' }}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileInput}
+                    className="hidden"
+                  />
+
+                  {selectedImage ? (
+                    <div className="relative h-full flex items-center justify-center">
+                      <img
+                        src={selectedImage}
+                        alt="Selected"
+                        className="max-w-full max-h-full rounded-lg object-contain bg-white"
+                        style={{ backgroundColor: 'white' }}
+                        onError={(e) => {
+                          console.error('Image display error:', e);
+                          setError('画像の表示に失敗しました');
+                        }}
+                        onLoad={() => console.log('Image loaded successfully')}
+                      />
+                      <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors rounded-lg cursor-pointer flex items-center justify-center">
+                        <p className="text-white opacity-0 hover:opacity-100 transition-opacity">
+                          クリックして変更
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <ImageIcon className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                      <p className="text-gray-600 mb-2">
+                        画像をドラッグ&ドロップ
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        またはクリックして選択
                       </p>
                     </div>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <ImageIcon className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-600 mb-2">
-                      画像をドラッグ&ドロップ
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      またはクリックして選択
-                    </p>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
             )}
 
             <div className="bg-white rounded-xl shadow-lg p-6">
@@ -396,7 +392,7 @@ const ImageEditor = () => {
                 <Sparkles className="w-5 h-5 text-purple-600" />
                 {mode === 'edit' ? '編集指示' : mode === 'combined' ? '文字削除指示（オプション）' : '画像生成の説明'}
               </h2>
-              
+
               {mode === 'edit' || mode === 'combined' ? (
                 <textarea
                   value={prompt}
@@ -418,17 +414,17 @@ const ImageEditor = () => {
               <div className="mt-4">
                 <p className="text-sm text-gray-600 mb-2">{mode === 'combined' ? 'サンプル指示（文字削除）:' : 'サンプル指示:'}</p>
                 <div className="flex flex-wrap gap-2">
-                  {(mode === 'edit' || mode === 'combined' ? 
-                    (mode === 'combined' ? combinedSamplePrompts : samplePrompts) : 
+                  {(mode === 'edit' || mode === 'combined' ?
+                    (mode === 'combined' ? combinedSamplePrompts : samplePrompts) :
                     textSamplePrompts).map((sample, index) => (
-                    <button
-                      key={index}
-                      onClick={() => (mode === 'edit' || mode === 'combined') ? setPrompt(sample) : setTextPrompt(sample)}
-                      className="px-3 py-1 text-sm bg-gray-100 hover:bg-purple-100 text-gray-700 hover:text-purple-700 rounded-full transition-colors"
-                    >
-                      {sample}
-                    </button>
-                  ))}
+                      <button
+                        key={index}
+                        onClick={() => (mode === 'edit' || mode === 'combined') ? setPrompt(sample) : setTextPrompt(sample)}
+                        className="px-3 py-1 text-sm bg-gray-100 hover:bg-purple-100 text-gray-700 hover:text-purple-700 rounded-full transition-colors"
+                      >
+                        {sample}
+                      </button>
+                    ))}
                 </div>
               </div>
 
@@ -436,8 +432,8 @@ const ImageEditor = () => {
               {mode !== 'combined' && (
                 <div className="mt-4">
                   <p className="text-sm text-gray-600 mb-2">生成枚数:</p>
-                  <select 
-                    value={imageCount} 
+                  <select
+                    value={imageCount}
                     onChange={(e) => setImageCount(Number(e.target.value) as 1 | 2 | 3)}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
@@ -451,17 +447,18 @@ const ImageEditor = () => {
               <button
                 onClick={generateVariations}
                 disabled={
-                  isLoading || 
-                  ((mode === 'edit' || mode === 'combined') && (!selectedImage || !prompt)) ||
+                  isLoading ||
+                  (mode === 'edit' && (!selectedImage || !prompt)) ||
+                  (mode === 'combined' && !selectedImage) ||
                   (mode === 'generate' && !textPrompt.trim())
                 }
-                className={`w-full mt-4 py-3 px-4 rounded-lg font-semibold transition-all transform hover:scale-105 ${
-                  isLoading || 
-                  ((mode === 'edit' || mode === 'combined') && (!selectedImage || !prompt)) ||
-                  (mode === 'generate' && !textPrompt.trim())
+                className={`w-full mt-4 py-3 px-4 rounded-lg font-semibold transition-all transform hover:scale-105 ${isLoading ||
+                    (mode === 'edit' && (!selectedImage || !prompt)) ||
+                    (mode === 'combined' && !selectedImage) ||
+                    (mode === 'generate' && !textPrompt.trim())
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
-                }`}
+                  }`}
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -469,9 +466,9 @@ const ImageEditor = () => {
                     {mode === 'combined' ? '統合生成中...' : '生成中...'}
                   </span>
                 ) : (
-                  mode === 'combined' 
+                  mode === 'combined'
                     ? 'オーバーレイ削除商品画像を3枚生成'
-                    : mode === 'edit' 
+                    : mode === 'edit'
                       ? `${imageCount}つのバリエーションを生成`
                       : `${imageCount}枚の画像を生成`
                 )}
@@ -492,7 +489,7 @@ const ImageEditor = () => {
           <div className="space-y-4">
             <div className="bg-white rounded-xl shadow-lg p-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">生成結果</h2>
-              
+
               {variations.length > 0 ? (
                 <div className="space-y-6">
                   {mode === 'combined' ? (
@@ -506,7 +503,7 @@ const ImageEditor = () => {
                               src={`data:${variation.mimeType};base64,${variation.data}`}
                               alt={`Text Removed ${variation.index}`}
                               className="w-full h-auto rounded-lg bg-white border"
-                              style={{ 
+                              style={{
                                 backgroundColor: 'white',
                                 minHeight: '200px'
                               }}
@@ -534,7 +531,7 @@ const ImageEditor = () => {
                             src={`data:${variation.mimeType};base64,${variation.data}`}
                             alt={`Variation ${variation.index}`}
                             className="w-full h-auto rounded-lg bg-white border"
-                            style={{ 
+                            style={{
                               backgroundColor: 'white',
                               minHeight: '200px'
                             }}

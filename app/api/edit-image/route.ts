@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     // モードに応じたAPIリクエストボディを構築
     let requestBody: any = {
-      model: "google/gemini-2.5-flash-image-preview",
+      model: "google/gemini-2.5-flash-image",
       modalities: ["image", "text"],
       temperature: 0.7
     };
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return NextResponse.json({ 
     status: 'API動作中',
-    model: 'google/gemini-2.5-flash-image-preview',
+    model: 'google/gemini-2.5-flash-image',
     hasApiKey: !!process.env.OPENROUTER_API_KEY
   });
 }
